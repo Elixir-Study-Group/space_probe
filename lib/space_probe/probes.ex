@@ -4,46 +4,57 @@ defmodule SpaceProbe.Probes do
   @valid_instructions ["TL", "TR", "M"]
 
   def run_instructions(%Probe{} = probe, instructions) do
-    if Enum.all?(instructions, &(&1 in @valid_instructions)) do
-      changes = %{x: probe.x, y: probe.y, face: probe.face}
+    run_instructions(probe, instructions, %{x: probe.x, y: probe.y, face: probe.face})
+  end
 
-      Enum.reduce(instructions, {:ok, changes}, fn
-        "M", {:ok, changes} -> move(changes,  probe.max_x, probe.max_y)
-        direction, {:ok, changes} -> rotate(changes, direction)
-        _, changes -> changes
-      end)
-    else
-      {:error, "Invalid instructions"}
+  def run_instructions(_, _, {:error, _} = changes) do
+    changes
+  end
+
+  def run_instructions(_, [], changes) do
+    {:ok, changes}
+  end
+
+  def run_instructions(%Probe{} = probe, [instruction | instructions], changes) do
+    cond do
+      instruction not in @valid_instructions ->
+        run_instructions(probe, [], {:error, "Invalid instructions"})
+
+      instruction == "M" ->
+        run_instructions(probe, instructions, move(changes, %{x: probe.max_x, y: probe.max_y}))
+
+      instruction in ["TL", "TR"] ->
+        run_instructions(probe, instructions, rotate(changes, instruction))
     end
   end
 
-  defp move(%{face: "R"} = changes, max_x, _max_y) when changes.x + 1 <= max_x do
-    {:ok, %{changes | x: changes.x + 1}}
+  defp move(%{face: "R"} = changes, max) when changes.x + 1 <= max.x do
+    %{changes | x: changes.x + 1}
   end
 
-  defp move(%{face: "L"} = changes, _max_x, _max_y) when changes.x - 1 >= 0 do
-    {:ok, %{changes | x: changes.x - 1}}
+  defp move(%{face: "L"} = changes, _max) when changes.x - 1 >= 0 do
+    %{changes | x: changes.x - 1}
   end
 
-  defp move(%{face: "U"} = changes, _max_x, max_y) when changes.y + 1 <= max_y do
-    {:ok, %{changes | y: changes.y + 1}}
+  defp move(%{face: "U"} = changes, max) when changes.y + 1 <= max.y do
+    %{changes | y: changes.y + 1}
   end
 
-  defp move(%{face: "B"} = changes, _max_x, _max_y) when changes.y - 1 >= 0 do
-    {:ok, %{changes | y: changes.y - 1}}
+  defp move(%{face: "B"} = changes, _max) when changes.y - 1 >= 0 do
+    %{changes | y: changes.y - 1}
   end
 
-  defp move(_, _, _) do
+  defp move(_, _) do
     {:error, "Out of bounds"}
   end
 
-  defp rotate(%{face: "R"} = changes, "TL"), do: {:ok, %{changes | face: "U"}}
-  defp rotate(%{face: "L"} = changes, "TL"), do: {:ok, %{changes | face: "B"}}
-  defp rotate(%{face: "U"} = changes, "TL"), do: {:ok, %{changes | face: "L"}}
-  defp rotate(%{face: "B"} = changes, "TL"), do: {:ok, %{changes | face: "R"}}
+  defp rotate(%{face: "R"} = changes, "TL"), do: %{changes | face: "U"}
+  defp rotate(%{face: "L"} = changes, "TL"), do: %{changes | face: "B"}
+  defp rotate(%{face: "U"} = changes, "TL"), do: %{changes | face: "L"}
+  defp rotate(%{face: "B"} = changes, "TL"), do: %{changes | face: "R"}
 
-  defp rotate(%{face: "R"} = changes, "TR"), do: {:ok, %{changes | face: "B"}}
-  defp rotate(%{face: "L"} = changes, "TR"), do: {:ok, %{changes | face: "U"}}
-  defp rotate(%{face: "U"} = changes, "TR"), do: {:ok, %{changes | face: "R"}}
-  defp rotate(%{face: "B"} = changes, "TR"), do: {:ok, %{changes | face: "L"}}
+  defp rotate(%{face: "R"} = changes, "TR"), do: %{changes | face: "B"}
+  defp rotate(%{face: "L"} = changes, "TR"), do: %{changes | face: "U"}
+  defp rotate(%{face: "U"} = changes, "TR"), do: %{changes | face: "R"}
+  defp rotate(%{face: "B"} = changes, "TR"), do: %{changes | face: "L"}
 end
