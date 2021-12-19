@@ -13,10 +13,13 @@ defmodule SpaceProbe.Probe do
   end
 
   @doc false
-  def changeset(probe, %{max_x: max_x}=attrs) do
+  def changeset(probe, attrs) do
+    max_x = Map.get(attrs, :max_x, probe.max_x)
+
     probe
     |> cast(attrs, [:x, :y, :face, :max_x, :max_y])
     |> validate_required([:x, :y, :face, :max_x, :max_y])
     |> validate_number(:x, less_than: max_x, message: "must be less than max_x (%{number})")
+    |> validate_number(:x, greater_than_or_equal_to: 0)
   end
 end
