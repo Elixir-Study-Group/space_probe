@@ -12,5 +12,10 @@ defmodule SpaceProbe.ProbeTest do
       changeset = Probe.changeset(%Probe{}, %{x: -1})
       assert errors_on(changeset) == %{x: ["must be greater than or equal to 0"]}
     end
+
+    test "if throws a error when y is greater than max_y" do
+      changeset = Probe.changeset(%Probe{}, %{y: 2, max_y: 1})
+      assert errors_on(changeset) == %{y: ["must be less than max_y (1)"]}
+    end
   end
 end
