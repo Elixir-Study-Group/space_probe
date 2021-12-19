@@ -1,6 +1,9 @@
 defmodule SpaceProbe.Probe do
   use Ecto.Schema
   import Ecto.Changeset
+  alias Ecto.Changeset
+
+  @valid_faces ["R", "L", "U", "B"]
 
   schema "probes" do
     field :face, :string, default: "R"
@@ -24,5 +27,22 @@ defmodule SpaceProbe.Probe do
     |> validate_number(:x, greater_than_or_equal_to: 0)
     |> validate_number(:y, less_than: max_y, message: "must be less than max_y (%{number})")
     |> validate_number(:y, greater_than_or_equal_to: 0)
+    |> validate_face()
+  end
+
+  defp validate_face(%Changeset{valid?: false} = changeset) do
+    changeset
+  end
+
+  defp validate_face(%Changeset{valid?: true} = changeset) do
+    face = Map.get(changeset.changes, :face, changeset.data.face)
+
+    if face in @valid_faces do
+      changeset
+    else
+      add_error(changeset, :face, "must be in [%{valid_faces}]",
+        valid_faces: Enum.join(@valid_faces, ", ")
+      )
+    end
   end
 end
