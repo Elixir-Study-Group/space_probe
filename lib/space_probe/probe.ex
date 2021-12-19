@@ -23,5 +23,6 @@ defmodule SpaceProbe.Probe do
     |> validate_number(:x, less_than: max_x, message: "must be less than max_x (%{number})")
     |> validate_number(:x, greater_than_or_equal_to: 0)
     |> validate_number(:y, less_than: max_y, message: "must be less than max_y (%{number})")
+    |> validate_number(:y, greater_than_or_equal_to: 0)
   end
 end
